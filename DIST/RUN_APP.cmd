@@ -1,0 +1,1 @@
+jre\bin\java -jar AXI-TS-0.0.1-SNAPSHOT.jar
