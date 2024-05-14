@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,9 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
+
+import axi.xcell.model.ConfigItemsListnerList;
+import axi.xcell.model.ConfigItemsListnerList.ConfigItemModel;
 
 public class GoogleSheetApiManager {
 	private static final String APPLICATION_NAME = "Google Sheets API TS";
@@ -97,6 +101,34 @@ public class GoogleSheetApiManager {
 				.execute();
 
 		System.out.println(result);
+	}
+	
+	public ConfigItemsListnerList readTopicList(String range) throws IOException {
+		ConfigItemsListnerList res = new ConfigItemsListnerList();
+		ValueRange response = service.
+				spreadsheets().
+				values()
+				.get(spreadsheetId, range)
+				.execute();
+
+
+		List<List<Object>> values = response.getValues();
+		if (values == null || values.isEmpty()) {
+			System.out.println("No data found.");
+		} else {
+			System.out.println("Name, Major");
+			for (List row : values) {
+				res.add(res.new ConfigItemModel((String)row.get(0),"*"));
+				// Print columns A and E, which correspond to indices 0 and 4.
+//				if(row!=null&&row.size()>0)
+//					System.out.printf("%s\n", row.get(0));
+//				else 
+//					System.out.printf("%s\n", "----");
+
+			}
+		}
+		
+		return res;
 	}
 
 	/**

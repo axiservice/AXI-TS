@@ -2,7 +2,7 @@ package axi.xcell.model;
 
 import java.util.ArrayList;
 
-public class ConfigItemsListnerList extends ArrayList<String>{
+public class ConfigItemsListnerList extends ArrayList<ConfigItemsListnerList.ConfigItemModel>{
 	private static final long serialVersionUID = 1L;	
 	public static final String[] STOCK_MACROITEMS_ARRAY= {
 			"description","last","var_%","7",
@@ -17,4 +17,34 @@ public class ConfigItemsListnerList extends ArrayList<String>{
 			"Bid_Num_4","Bid_Qty_4","Bid_4","Ask_4","Ask_Qty_4","Ask_Num_4",
 			"Bid_Num_5","Bid_Qty_5","Bid_5","Ask_5","Ask_Qty_5","Ask_Num_5",
 			};
+	
+	public class ConfigItemModel{
+		String itemKey;
+		String sheetCellLocation;
+		
+		public ConfigItemModel() {
+			super();
+			// TODO Auto-generated constructor stub
+		}
+		
+		public ConfigItemModel(String itemKey, String sheetCellLocation) {
+			super();
+			this.itemKey = itemKey;
+			this.sheetCellLocation = sheetCellLocation;
+		}
+
+		public String getItemKey() {
+			return itemKey;
+		}
+		public void setItemKey(String itemKey) {
+			this.itemKey = itemKey;
+		}
+		public String getSheetCellLocation() {
+			return sheetCellLocation;
+		}
+		public void setSheetCellLocation(String sheetCellLocation) {
+			this.sheetCellLocation = sheetCellLocation;
+		}
+		
+	}
 }

@@ -9,10 +9,12 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +29,13 @@ import com.pretty_tools.dde.DDEMLException;
 import com.pretty_tools.dde.client.DDEClientConversation;
 import com.pretty_tools.dde.client.DDEClientEventListener;
 
+import axi.apis.GoogleSheetApiManager;
+import axi.xcell.dde.scheduler.GoogleSheetUpdateTask;
 import axi.xcell.dde.scheduler.PersistDataTask;
 import axi.xcell.model.DDEItems;
 import axi.xcell.model.DDEPriceRate;
 import axi.xcell.model.Datastorage;
+import axi.xcell.model.ConfigItemsListnerList.ConfigItemModel;
 import axi.xcell.model.Datastorage.Item;
 import axi.xcell.model.ConfigItemsListnerList;
 
@@ -42,12 +47,20 @@ public class EventReceiver {
 	private static final int PERSIST_DATA_TASK_START_DELAY = 5000;
 	private static final int PERSIST_DATA_TASK_PERIOD = 1*60*1000;  // 3 Minuti
 	
-	private static final String SERVICE = "FDF";
-	private static final String TOPIC = "Q";
+	private static final int GOOGLE_SHEET_UPADATE_TASK_START_DELAY = 5000;
+	private static final int GOOGLE_SHEET_UPADATE_TASK_PERIOD = 3*1000;  // 3 Secondi
+	
+	private static final String DDE_SERVICE = "FDF";
+	private static final String DDE_TOPIC = "Q";
 	
 	private static final Gson gson = new Gson();
 	
-	ConfigItemsListnerList configItemsListnerList = new ConfigItemsListnerList();
+	private static GoogleSheetApiManager googleSheetApiManager = null;
+	private static String GOOGLE_SPREADSHEET_ID = "1SLFRaLVjwZAlTiPwElSB1W3346Cxqo3dcPkMkCqJKtk";
+	private static String GOOGLE_SHEET_OUTPUT_RANGE = "Class Data!B2:C";
+	private static String GOOGLE_SHEET_TOPIC_INPUT_RANGE = "Class Data!A2:B";
+	
+	private static ConfigItemsListnerList configItemsListnerList = new ConfigItemsListnerList();
 	DDEItems itemsStorage = new DDEItems();
 	Datastorage datastorage = new Datastorage();
 	TimerTask task;
@@ -57,18 +70,43 @@ public class EventReceiver {
 	 */
 	public EventReceiver() {
 		super();
+		
+		initGoogleSheetAPIs(GOOGLE_SPREADSHEET_ID);
 
 		initScheduler();
 		initEventListner();
 
+
+	}
+	
+	/**
+	 * Init Google SHEET APIs
+	 */
+	private void initGoogleSheetAPIs(String spreadsheetId) {
+		try {
+			googleSheetApiManager = new GoogleSheetApiManager(spreadsheetId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (GeneralSecurityException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * 
 	 */
 	private void initScheduler() {
+		// [CONFIG] - Load Items List
+		///loadConfigFileItemsList();
+		loadGoogleSheetTopicList();
+		
+		// [CONFIG] - Process Macro Items
+		processMacro();
+		
 		//new Timer().schedule(new PersistDataTask(DATA_STORAGE_PATH, itemsStorage), PERSIST_DATA_TASK_START_DELAY, PERSIST_DATA_TASK_PERIOD);
 		new Timer().schedule(new PersistDataTask(PERSIST_DATA_STORAGE_PATH, datastorage), PERSIST_DATA_TASK_START_DELAY, PERSIST_DATA_TASK_PERIOD);
+		new Timer().schedule(new GoogleSheetUpdateTask(googleSheetApiManager, configItemsListnerList, datastorage, GOOGLE_SHEET_OUTPUT_RANGE),GOOGLE_SHEET_UPADATE_TASK_START_DELAY,GOOGLE_SHEET_UPADATE_TASK_PERIOD);
+
 	}
 
 	/**
@@ -76,11 +114,6 @@ public class EventReceiver {
 	 */
 	private void initEventListner() {
 		try {
-			// [CONFIG] - Load Items List
-			loadItemsList();
-			
-			// [CONFIG] - Process Macro Items
-			processMacro();
 			
 			// [CONFIG] - Save Items List to config file
 			//saveItemsList();
@@ -128,8 +161,10 @@ public class EventReceiver {
 			});
 
 			System.out.println("Connecting...");
-			conversation.connect(SERVICE, TOPIC);
-			for(String it : configItemsListnerList) {conversation.startAdvice(it);}
+			conversation.connect(DDE_SERVICE, DDE_TOPIC);
+			for(ConfigItemsListnerList.ConfigItemModel it : configItemsListnerList) {
+				conversation.startAdvice(it.getItemKey());
+			}
 			//            conversation.startAdvice(item);
 			//            conversation.startAdvice(item2);
 
@@ -195,13 +230,23 @@ public class EventReceiver {
 
 	}
 
-	private void loadItemsList() {
+	private void loadConfigFileItemsList() {
 		try {
 			JsonReader reader = new JsonReader(new FileReader(CONFIG_FILE));
 			configItemsListnerList = gson.fromJson(reader, ConfigItemsListnerList.class);
 			configItemsListnerList.remove(null);
-			System.out.println("LoadItemsList Tot.: "+configItemsListnerList.size());
+			System.out.println("loadConfigFileItemsList Tot.: "+configItemsListnerList.size());
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void loadGoogleSheetTopicList() {
+		try {
+			configItemsListnerList = googleSheetApiManager.readTopicList(GOOGLE_SHEET_TOPIC_INPUT_RANGE);
+			configItemsListnerList.remove(null);
+			System.out.println("loadGoogleSheetTopicList Tot.: "+configItemsListnerList.size());
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -213,15 +258,15 @@ public class EventReceiver {
 
 		configItemsListnerList.forEach(
 				(value) -> {
-					String[] valueSplit = value.split(";");
+					String[] valueSplit = value.getItemKey().split(";");
 					if(valueSplit.length>1) {
 						if(valueSplit[1].equalsIgnoreCase(MACRO_ITEM_STOCK)){
 							for(String subItem : ConfigItemsListnerList.STOCK_MACROITEMS_ARRAY) {
-								processedList.add(valueSplit[0]+";"+subItem);
+								processedList.add(configItemsListnerList.new ConfigItemModel(valueSplit[0]+";"+subItem,"*"));
 							}
 						} else if(valueSplit[1].equalsIgnoreCase(MACRO_ITEM_BOOK)){ 
 							for(String subItem : ConfigItemsListnerList.BOOK_MACROITEMS_ARRAY) {
-								processedList.add(valueSplit[0]+";"+subItem);
+								processedList.add(configItemsListnerList.new ConfigItemModel(valueSplit[0]+";"+subItem,"*"));
 							}
 						} else {
 							processedList.add(value);
@@ -231,6 +276,7 @@ public class EventReceiver {
 		
 		configItemsListnerList = processedList;
 		System.out.println("processMacro Tot.: "+configItemsListnerList.size());
+		configItemsListnerList.forEach((v)->{System.out.println(" - "+v.getItemKey()+" - "+v.getSheetCellLocation());});
 	}
 	
 	/**
@@ -258,6 +304,7 @@ public class EventReceiver {
 	 */
 	public static void main(String[] args) {
 
+		// Init DDE event receiver
 		new EventReceiver();
 
 	}
