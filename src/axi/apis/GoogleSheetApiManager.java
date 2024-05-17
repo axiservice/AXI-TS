@@ -103,6 +103,12 @@ public class GoogleSheetApiManager {
 		System.out.println(result);
 	}
 	
+	/**
+	 * 
+	 * @param range
+	 * @return
+	 * @throws IOException
+	 */
 	public ConfigItemsListnerList readTopicList(String range) throws IOException {
 		ConfigItemsListnerList res = new ConfigItemsListnerList();
 		ValueRange response = service.
@@ -118,7 +124,14 @@ public class GoogleSheetApiManager {
 		} else {
 			System.out.println("Name, Major");
 			for (List row : values) {
-				res.add(res.new ConfigItemModel((String)row.get(0),"*"));
+				res.add(res.new ConfigItemModel(
+						row.size()>0?(String)row.get(0):"",           	// itemKey;
+						row.size()>1?(String)row.get(1):"1",           	// ticValue;
+						row.size()>2?(String)row.get(2):"1",           	// moltiplicatore;
+						row.size()>3?(String)row.get(3):"-",           	// descrizione;
+						"*"                           					// sheetCellLocation;
+						));
+				
 				// Print columns A and E, which correspond to indices 0 and 4.
 //				if(row!=null&&row.size()>0)
 //					System.out.printf("%s\n", row.get(0));

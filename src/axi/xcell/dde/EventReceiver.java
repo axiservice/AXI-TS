@@ -57,8 +57,8 @@ public class EventReceiver {
 	
 	private static GoogleSheetApiManager googleSheetApiManager = null;
 	private static String GOOGLE_SPREADSHEET_ID = "1SLFRaLVjwZAlTiPwElSB1W3346Cxqo3dcPkMkCqJKtk";
-	private static String GOOGLE_SHEET_OUTPUT_RANGE = "Class Data!B2:C";
-	private static String GOOGLE_SHEET_TOPIC_INPUT_RANGE = "Class Data!A2:B";
+	private static String GOOGLE_SHEET_OUTPUT_RANGE = "Display!B2:G";
+	private static String GOOGLE_SHEET_TOPIC_INPUT_RANGE = "Topic Input!A2:D";
 	
 	private static ConfigItemsListnerList configItemsListnerList = new ConfigItemsListnerList();
 	DDEItems itemsStorage = new DDEItems();
