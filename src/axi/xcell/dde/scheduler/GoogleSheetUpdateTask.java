@@ -68,7 +68,7 @@ public class GoogleSheetUpdateTask extends TimerTask {
 		
 	    configItemsListnerList.forEach((i)->{
 	    	synchronized(datastorage){
-	    		LinkedList<Item> ilist = datastorage.get("Q-"+i.getItemKey());	
+	    		LinkedList<Item> ilist = datastorage.get("Q-"+i.getItemKey());
 	    		if(ilist!=null && ilist.size()>0){
 
 	    			String 
