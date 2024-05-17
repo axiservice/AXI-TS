@@ -20,6 +20,9 @@ public class ConfigItemsListnerList extends ArrayList<ConfigItemsListnerList.Con
 	
 	public class ConfigItemModel{
 		String itemKey;
+		String ticValue;
+		String moltiplicatore;
+		String descrizione;
 		String sheetCellLocation;
 		
 		public ConfigItemModel() {
@@ -30,6 +33,16 @@ public class ConfigItemsListnerList extends ArrayList<ConfigItemsListnerList.Con
 		public ConfigItemModel(String itemKey, String sheetCellLocation) {
 			super();
 			this.itemKey = itemKey;
+			this.sheetCellLocation = sheetCellLocation;
+		}
+
+		public ConfigItemModel(String itemKey, String ticValue, String moltiplicatore, String descrizione,
+				String sheetCellLocation) {
+			super();
+			this.itemKey = itemKey;
+			this.ticValue = ticValue;
+			this.moltiplicatore = moltiplicatore;
+			this.descrizione = descrizione;
 			this.sheetCellLocation = sheetCellLocation;
 		}
 
@@ -45,6 +58,31 @@ public class ConfigItemsListnerList extends ArrayList<ConfigItemsListnerList.Con
 		public void setSheetCellLocation(String sheetCellLocation) {
 			this.sheetCellLocation = sheetCellLocation;
 		}
+
+		public String getTicValue() {
+			return ticValue;
+		}
+
+		public void setTicValue(String ticValue) {
+			this.ticValue = ticValue;
+		}
+
+		public String getMoltiplicatore() {
+			return moltiplicatore;
+		}
+
+		public void setMoltiplicatore(String moltiplicatore) {
+			this.moltiplicatore = moltiplicatore;
+		}
+
+		public String getDescrizione() {
+			return descrizione;
+		}
+
+		public void setDescrizione(String descrizione) {
+			this.descrizione = descrizione;
+		}
+		
 		
 	}
 }

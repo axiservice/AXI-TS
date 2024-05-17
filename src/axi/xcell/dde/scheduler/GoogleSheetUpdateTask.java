@@ -71,11 +71,24 @@ public class GoogleSheetUpdateTask extends TimerTask {
 	    		LinkedList<Item> ilist = datastorage.get("Q-"+i.getItemKey());
 	    		//newValues2.add(Arrays.asList("X"));	
 	    		if(ilist!=null && ilist.size()>0){
-	    			String pdata;
 
-						pdata = (""+ilist.getLast().getValue()).replace(".", ",");
-						newValues2.add(Arrays.asList(i.getItemKey(),pdata));
-	    				
+	    			String 
+	    			itemKey = i.getItemKey(),
+	    			pdata = (""+ilist.getLast().getValue()).replace(",", "."),
+	    			ticValue = i.getTicValue(),
+	    			moltiplicatore = i.getMoltiplicatore(),
+	    			descrizione = i.getDescrizione(),
+	    			sheetCellLocation = i.getSheetCellLocation();
+
+	    			newValues2.add(Arrays.asList(
+	    					itemKey,			// B
+	    					pdata,				// C
+	    	    			ticValue,			// D
+	    	    			moltiplicatore, 	// E
+	    	    			descrizione,		// F
+	    	    			sheetCellLocation	// G
+	    					));
+
 	    		}
 	    	}
 	    });
