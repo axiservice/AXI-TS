@@ -48,7 +48,7 @@ public class EventReceiver {
 	private static final int PERSIST_DATA_TASK_PERIOD = 1*60*1000;  // 3 Minuti
 	
 	private static final int GOOGLE_SHEET_UPADATE_TASK_START_DELAY = 5000;
-	private static final int GOOGLE_SHEET_UPADATE_TASK_PERIOD = 3*1000;  // 3 Secondi
+	private static final int GOOGLE_SHEET_UPADATE_TASK_PERIOD = 500; //3*1000;  // 3 Secondi
 	
 	private static final String DDE_SERVICE = "FDF";
 	private static final String DDE_TOPIC = "Q";
